@@ -6,7 +6,6 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-// Đăng ký người dùng (có role)
 router.post(
   "/register",
   [
@@ -35,7 +34,7 @@ router.post(
       const hashedPassword = await bcrypt.hash(password, salt);
 
       user = new User({
-        username, // Thay đổi từ name -> username
+        username,
         email,
         password: hashedPassword,
         role: role || "user",
@@ -54,7 +53,6 @@ router.post(
   }
 );
 
-// Đăng nhập (trả về role)
 router.post(
   "/login",
   [
@@ -83,7 +81,7 @@ router.post(
       const payload = {
         user: {
           id: user.id,
-          username: user.username, // Trả về username
+          username: user.username,
           role: user.role,
         },
       };
@@ -105,7 +103,6 @@ router.post(
 );
 
 
-// Middleware xác thực token
 const authMiddleware = (req, res, next) => {
   const token = req.header("x-auth-token");
   if (!token) {
@@ -121,7 +118,6 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-// Middleware kiểm tra quyền truy cập
 const authorize = (roles = []) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -131,12 +127,10 @@ const authorize = (roles = []) => {
   };
 };
 
-// API dành cho Admin
 router.get("/admin", authMiddleware, authorize(["admin"]), (req, res) => {
   res.json({ msg: "Chào mừng Admin" });
 });
 
-// API dành cho Moderator
 router.get(
   "/moderator",
   authMiddleware,
@@ -146,7 +140,6 @@ router.get(
   }
 );
 
-// Lấy thông tin user (yêu cầu token)
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
