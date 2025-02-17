@@ -5,7 +5,7 @@ const ProductSchema = new mongoose.Schema(
     service_id: { type: Number, unique: true },
     name: { type: String, required: true },
     description: { type: String },
-    price: { type: mongoose.Types.Decimal128, required: true },
+    price: { type: Number, required: true }, // Đổi từ Decimal128 sang Number
     duration: { type: Number, required: true },
     category: {
       type: mongoose.Schema.Types.ObjectId,
@@ -13,7 +13,7 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
     image: { type: String, default: "" },
-    createDate: { type: Date, default: Date.now }, 
+    createDate: { type: Date, default: Date.now },
     updateDate: { type: Date, default: Date.now },
   },
   { timestamps: false }

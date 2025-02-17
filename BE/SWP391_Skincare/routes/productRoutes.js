@@ -9,7 +9,9 @@ router.post(
   "/",
   [
     check("name", "Tên sản phẩm không được để trống").not().isEmpty(),
-    check("price", "Giá sản phẩm phải là số").isNumeric(),
+    check("price", "Giá sản phẩm phải là số hợp lệ").matches(
+      /^\d{1,3}(\.\d{3})*$/
+    ), // Regex kiểm tra định dạng 100.000
     check("duration", "Thời gian phải là số nguyên").isInt(),
     check("category", "ID danh mục không hợp lệ").isMongoId(),
   ],
@@ -19,7 +21,16 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, description, price, duration, category, image } = req.body;
+    let { name, description, price, duration, category, image } = req.body;
+
+    // Kiểm tra và xử lý giá tiền
+    if (typeof price === "string") {
+      price = price.replace(/\./g, ""); // Loại bỏ dấu chấm nếu giá là chuỗi
+    } else if (typeof price === "number") {
+      price = price.toString(); // Chuyển số thành chuỗi để đồng nhất
+    } else {
+      return res.status(400).json({ msg: "Giá sản phẩm không hợp lệ" });
+    }
 
     try {
       const categoryExists = await Category.findById(category);
@@ -37,7 +48,7 @@ router.post(
         price,
         duration,
         category,
-        image: image || "", 
+        image: image || "",
       });
 
       await product.save();
@@ -48,7 +59,6 @@ router.post(
     }
   }
 );
-
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find().populate(

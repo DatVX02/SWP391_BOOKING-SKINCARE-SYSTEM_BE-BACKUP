@@ -11,7 +11,7 @@ router.post(
   [
     check("username", "Tên người dùng không được để trống").not().isEmpty(),
     check("email", "Email không hợp lệ").isEmail(),
-    check("password", "Mật khẩu phải có ít nhất 6 ký tự").isLength({ min: 6 }),
+    check("password", "Mật khẩu phải có ít nhất 8 ký tự").isLength({ min: 8 }),
     check("role", "Vai trò không hợp lệ")
       .optional()
       .isIn(["user", "admin", "moderator"]),
