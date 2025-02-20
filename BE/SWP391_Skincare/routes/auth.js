@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
 const User = require("../models/User");
-
 const router = express.Router();
 const { sendOTP } = require("../utils/email");
 router.post(
