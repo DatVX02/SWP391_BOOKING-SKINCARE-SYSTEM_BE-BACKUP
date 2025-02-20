@@ -7,12 +7,12 @@ const UserSchema = new mongoose.Schema(
     password: { type: String },
     role: {
       type: String,
-      enum: ["user", "admin", "moderator", "manager", "staff"],
+      enum: ["user", "admin", "Skincare_Staff ", "manager", "staff"],
       default: "user",
     },
-    otp: { type: String }, // Lưu mã OTP
-    otpExpires: { type: Date }, // Thời gian hết hạn OTP
-    isVerified: { type: Boolean, default: false }, // Xác thực email hay chưa
+    otp: { type: String }, 
+    otpExpires: { type: Date },
+    isVerified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

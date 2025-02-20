@@ -5,6 +5,8 @@ const { check, validationResult } = require("express-validator");
 const User = require("../models/User");
 const router = express.Router();
 const { sendOTP } = require("../utils/email");
+
+//Đăng ký tài khoản
 router.post(
   "/register",
   [
@@ -40,20 +42,26 @@ router.post(
       user = new User({
         username,
         email,
-        password: hashedPassword, // Lưu mật khẩu đã băm ngay từ đầu
+        password: hashedPassword, 
         role: role || "user",
         otp,
         otpExpires,
-        isVerified: false, // Chưa kích hoạt tài khoản
+        isVerified: false,
       });
 
       await user.save();
       await sendOTP(email, otp);
 
-      res.status(200).json({
+      const response = {
         msg: "Mã OTP đã được gửi đến email. Vui lòng xác thực!",
         email,
-      });
+      };
+
+      if (process.env.NODE_ENV === "development") {
+        response.otp = otp;
+      }
+
+      res.status(200).json(response);
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
@@ -61,7 +69,7 @@ router.post(
   }
 );
 
-
+// Xác thực mã OTP
 router.post(
   "/verify-otp",
   [
@@ -82,14 +90,13 @@ router.post(
 
       // Cập nhật trạng thái tài khoản là đã xác thực
       user.isVerified = true;
-      user.otp = null;
-      user.otpExpires = null;
-
       await user.save();
 
-      res
-        .status(200)
-        .json({ msg: "Xác thực thành công, bạn có thể đăng nhập!" });
+      res.status(200).json({
+        msg: "Xác thực thành công, bạn có thể đăng nhập!",
+        otp: user.otp, // Luôn trả về OTP sau khi xác thực
+        otpExpires: user.otpExpires, // Hiển thị thời gian hết hạn
+      });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
@@ -97,6 +104,9 @@ router.post(
   }
 );
 
+
+
+// Đăng nhập tài khoản
 router.post(
   "/login",
   [
