@@ -1,0 +1,51 @@
+Login: http://localhost:5000/api/auth/login
+Register: http://localhost:5000/api/auth/register
+Verify-OTP: http://localhost:5000/api/auth/verify-otp
+Category: http://localhost:5000/api/categories/
+Product: http://localhost:5000/api/products/
+
+
+API test:
+Category: 
+{
+  "name": "Dịch vụ massage",
+  "description": "Danh mục các dịch vụ massage cao "
+}
+
+JSON:
+{
+    "name": "Dịch vụ massage",
+    "description": "Danh mục các dịch vụ massage cao ",
+    "_id": "67b2c2b2b6ebc9dae542baa5",
+    "createdAt": "2025-02-17T05:01:38.435Z",
+    "updatedAt": "2025-02-17T05:01:38.435Z",
+    "__v": 0
+}
+
+
+Product: 
+{
+    "name": "Massage toàn thân",
+    "description": "Massage thư giãn toàn thân trong 60 phút",
+    "price": "150.000",
+    "duration": 60,
+    "category": "67b2ff4705c3d1c759d51010",
+    "image": "https://edbeauty.vn/wp-content/uploads/2024/11/Kem-chong-nang-Image-Skincare-Daily-Prevention-Pure-Meniral-Hydrating-Moisturizer-SPF30-4.png"
+}
+
+JSON:
+{
+    "service_id": 3,
+    "name": "Massage toàn thân",
+    "description": "Massage thư giãn toàn thân trong 60 phút",
+    "price": {
+        "$numberDecimal": "299.99"
+    },
+    "duration": 60,
+    "category": "67b2c2b2b6ebc9dae542baa5",
+    "image": "https://edbeauty.vn/wp-content/uploads/2024/11/Kem-chong-nang-Image-Skincare-Daily-Prevention-Pure-Meniral-Hydrating-Moisturizer-SPF30-4.png",
+    "_id": "67b2c2b7b6ebc9dae542baa9",
+    "createDate": "2025-02-17T05:01:44.002Z",
+    "updateDate": "2025-02-17T05:01:44.004Z",
+    "__v": 0
+}

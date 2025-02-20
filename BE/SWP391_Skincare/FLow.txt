@@ -1,0 +1,44 @@
+- Luồng chạy login + register: 
++ Đăng ký tài khoản -> gửi mã OTP về mail -> verify OTP -> login vào hệ thống
+
+API test:
+- Register: 
++ API: http://localhost:5000/api/auth/register
++ JSON:
+{
+  "username": "testuser",
+  "email": "vxdat13@gmail.com",
+  "password": "password123",
+  "role": "user"
+}
+-> result: 
+{
+    "msg": "Mã OTP đã được gửi đến email. Vui lòng xác thực!",
+    "email": "vxdat13@gmail.com"
+}
+
+- Verify-OTP: 
++ API: http://localhost:5000/api/auth/verify-otp
++ Json: 
+{
+  "email": "vxdat13@gmail.com",
+  "otp": "799218" //OTP hệ thống trả về xem trong mongo
+}
+-> result: 
+{
+    "msg": "Xác thực thành công, bạn có thể đăng nhập!"
+}
+
+
+- Login: 
++ API: http://localhost:5000/api/auth/login
++ JSON: 
+{
+  "email": "vxdat13@gmail.com",
+  "password": "password123"}
+-> result: 
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjdiNjliMjk4NDE0MmY5YTcyY2UyZWFiIiwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsInJvbGUiOiJ1c2VyIn0sImlhdCI6MTc0MDAyMDY1MSwiZXhwIjoxNzQwMDI0MjUxfQ.YMuy3GsAv4-FsW-gerAL0tjc7nWkgdtq_fKsP32Se3I",
+    "username": "testuser",
+    "role": "user"
+}

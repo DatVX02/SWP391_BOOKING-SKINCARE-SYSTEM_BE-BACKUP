@@ -5,7 +5,7 @@ const { check, validationResult } = require("express-validator");
 const User = require("../models/User");
 
 const router = express.Router();
-
+const { sendOTP } = require("../utils/email");
 router.post(
   "/register",
   [
@@ -30,22 +30,67 @@ router.post(
         return res.status(400).json({ msg: "Email đã được sử dụng" });
       }
 
+      // Băm mật khẩu ngay lập tức
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
+
+      // Tạo mã OTP ngẫu nhiên (6 số)
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
 
       user = new User({
         username,
         email,
-        password: hashedPassword,
+        password: hashedPassword, // Lưu mật khẩu đã băm ngay từ đầu
         role: role || "user",
+        otp,
+        otpExpires,
+        isVerified: false, // Chưa kích hoạt tài khoản
       });
 
       await user.save();
+      await sendOTP(email, otp);
 
-      res.status(201).json({
-        msg: "Đăng ký thành công",
-        user: { username, email, role: user.role },
+      res.status(200).json({
+        msg: "Mã OTP đã được gửi đến email. Vui lòng xác thực!",
+        email,
       });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Lỗi máy chủ");
+    }
+  }
+);
+
+
+router.post(
+  "/verify-otp",
+  [
+    check("email", "Email không hợp lệ").isEmail(),
+    check("otp", "OTP không hợp lệ").isLength({ min: 6, max: 6 }),
+  ],
+  async (req, res) => {
+    const { email, otp } = req.body;
+
+    try {
+      let user = await User.findOne({ email });
+
+      if (!user || user.otp !== otp || user.otpExpires < new Date()) {
+        return res
+          .status(400)
+          .json({ msg: "OTP không hợp lệ hoặc đã hết hạn" });
+      }
+
+      // Cập nhật trạng thái tài khoản là đã xác thực
+      user.isVerified = true;
+      user.otp = null;
+      user.otpExpires = null;
+
+      await user.save();
+
+      res
+        .status(200)
+        .json({ msg: "Xác thực thành công, bạn có thể đăng nhập!" });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
@@ -60,17 +105,16 @@ router.post(
     check("password", "Vui lòng nhập mật khẩu").exists(),
   ],
   async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const { email, password } = req.body;
 
     try {
       let user = await User.findOne({ email });
       if (!user) {
         return res.status(400).json({ msg: "Sai email hoặc mật khẩu" });
+      }
+
+      if (!user.isVerified) {
+        return res.status(400).json({ msg: "Email chưa được xác thực!" });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -101,6 +145,7 @@ router.post(
     }
   }
 );
+
 
 
 const authMiddleware = (req, res, next) => {
