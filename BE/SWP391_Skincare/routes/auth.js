@@ -42,7 +42,7 @@ router.post(
       user = new User({
         username,
         email,
-        password: hashedPassword, 
+        password: hashedPassword,
         role: role || "user",
         otp,
         otpExpires,
@@ -104,8 +104,6 @@ router.post(
   }
 );
 
-
-
 // Đăng nhập tài khoản
 router.post(
   "/login",
@@ -154,8 +152,6 @@ router.post(
     }
   }
 );
-
-
 
 const authMiddleware = (req, res, next) => {
   const token = req.header("x-auth-token");
@@ -269,11 +265,9 @@ router.post(
       // Gửi OTP Reset Password
       await sendResetPasswordOTP(email, otp);
 
-      res
-        .status(200)
-        .json({
-          msg: "Mã OTP đặt lại mật khẩu đã được gửi đến email của bạn.",
-        });
+      res.status(200).json({
+        msg: "Mã OTP đặt lại mật khẩu đã được gửi đến email của bạn.",
+      });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
@@ -321,8 +315,8 @@ router.post(
 
       // Cập nhật mật khẩu mới và xóa OTP
       user.password = hashedPassword;
-      user.otp = null;
-      user.otpExpires = null;
+      // user.otp = null;
+      // user.otpExpires = null;
       await user.save();
 
       res.status(200).json({ msg: "Mật khẩu đã được cập nhật thành công" });
@@ -332,8 +326,4 @@ router.post(
     }
   }
 );
-
-
-
-
 module.exports = router;
