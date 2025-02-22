@@ -55,11 +55,24 @@ router.get("/:id", async (req, res) => {
 //Cập nhật voucher
 router.put("/:id", async (req, res) => {
   try {
-    const { code, discount, minOrderValue, maxDiscount, expiryDate, isActive } =
-      req.body;
+    const {
+      code,
+      discountPercentage,
+      minOrderValue,
+      maxDiscount,
+      expiryDate,
+      isActive,
+    } = req.body;
     const updatedVoucher = await Voucher.findByIdAndUpdate(
       req.params.id,
-      { code, discount, minOrderValue, maxDiscount, expiryDate, isActive },
+      {
+        code,
+        discountPercentage,
+        minOrderValue,
+        maxDiscount,
+        expiryDate,
+        isActive,
+      },
       { new: true }
     );
     res.json(updatedVoucher);

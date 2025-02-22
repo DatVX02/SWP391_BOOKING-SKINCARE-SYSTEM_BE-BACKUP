@@ -6,6 +6,7 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/auth");
 const voucherRoutes = require("./routes/voucherRoutes");
+const userRoutes = require("./routes/user"); // Đảm bảo đúng đường dẫn
 const app = express();
 
 // Middleware
@@ -15,6 +16,7 @@ app.use(cors());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/vouchers", voucherRoutes);
 // Kết nối MongoDB
