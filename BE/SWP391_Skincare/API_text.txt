@@ -3,7 +3,7 @@ Register: http://localhost:5000/api/auth/register
 Verify-OTP: http://localhost:5000/api/auth/verify-otp
 Category: http://localhost:5000/api/categories/
 Product: http://localhost:5000/api/products/
-
+Voucher: http://localhost:5000/api/vouchers
 
 API test:
 Category: 
@@ -48,4 +48,20 @@ JSON:
     "createDate": "2025-02-17T05:01:44.002Z",
     "updateDate": "2025-02-17T05:01:44.004Z",
     "__v": 0
+}
+
+- Voucher: 
++ API: http://localhost:5000/api/vouchers
++ JSON:
+{
+  "code": "DISCOUNT20",
+  "discountPercentage": 20,
+  "expiryDate": "2025-12-31"
+}
+Kiểm tra & áp dụng voucher:
++ API: http://localhost:5000/api/vouchers/apply
++ JSON:
+{
+  "code": "DISCOUNT20",
+  "orderValue": 500000
 }

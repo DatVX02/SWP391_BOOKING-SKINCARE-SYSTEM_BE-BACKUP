@@ -5,7 +5,7 @@ const cors = require("cors");
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/auth");
-
+const voucherRoutes = require("./routes/voucherRoutes");
 const app = express();
 
 // Middleware
@@ -14,9 +14,9 @@ app.use(cors());
 
 // Routes
 app.use("/api/auth", authRoutes);
-
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/vouchers", voucherRoutes);
 // Kết nối MongoDB
 mongoose
   .connect(process.env.MONGO_URI, {
