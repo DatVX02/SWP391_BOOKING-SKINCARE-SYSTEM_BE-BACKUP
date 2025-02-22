@@ -1,6 +1,6 @@
 - Luồng chạy login + register: 
 + Đăng ký tài khoản -> gửi mã OTP về mail -> verify OTP -> login vào hệ thống
-
++ Quên mật khẩu: nhập email -> gửi mã OTP về mail -> nhập mật khẩu cũ đúng với hệ thống -> nhập mật khẩu mới + xác nhận mật khẩu mới (nếu mã trùng nhau thì mới submit được)
 API test:
 - Register: 
 + API: http://localhost:5000/api/auth/register
