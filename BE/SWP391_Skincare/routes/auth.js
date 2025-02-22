@@ -5,7 +5,7 @@ const { check, validationResult } = require("express-validator");
 const User = require("../models/User");
 const router = express.Router();
 const { sendOTP } = require("../utils/email");
-
+const { sendResetPasswordOTP } = require("../utils/email");
 //Đăng ký tài khoản
 router.post(
   "/register",
@@ -203,6 +203,137 @@ router.get("/me", authMiddleware, async (req, res) => {
     res.status(500).send("Lỗi máy chủ");
   }
 });
+
+router.post(
+  "/forgot-password",
+  [
+    check("email", "Email không hợp lệ").isEmail(),
+    check("old_password", "Mật khẩu cũ không được để trống").not().isEmpty(),
+    check("new_password", "Mật khẩu mới phải có ít nhất 8 ký tự").isLength({
+      min: 8,
+    }),
+  ],
+  async (req, res) => {
+    const { email, old_password, new_password } = req.body;
+
+    try {
+      let user = await User.findOne({ email });
+
+      if (!user) {
+        return res.status(400).json({ msg: "Email không tồn tại" });
+      }
+
+      // Kiểm tra mật khẩu cũ
+      const isMatch = await bcrypt.compare(old_password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ msg: "Mật khẩu cũ không chính xác" });
+      }
+
+      // Băm mật khẩu mới
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(new_password, salt);
+
+      // Cập nhật mật khẩu mới
+      user.password = hashedPassword;
+      await user.save();
+
+      res.status(200).json({ msg: "Mật khẩu đã được cập nhật thành công" });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Lỗi máy chủ");
+    }
+  }
+);
+
+router.post(
+  "/forgot-password/send-otp",
+  [check("email", "Email không hợp lệ").isEmail()],
+  async (req, res) => {
+    const { email } = req.body;
+
+    try {
+      let user = await User.findOne({ email });
+      if (!user) {
+        return res.status(400).json({ msg: "Email không tồn tại" });
+      }
+
+      // Tạo mã OTP ngẫu nhiên (6 số)
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
+
+      // Lưu OTP vào database
+      user.otp = otp;
+      user.otpExpires = otpExpires;
+      await user.save();
+
+      // Gửi OTP Reset Password
+      await sendResetPasswordOTP(email, otp);
+
+      res
+        .status(200)
+        .json({
+          msg: "Mã OTP đặt lại mật khẩu đã được gửi đến email của bạn.",
+        });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Lỗi máy chủ");
+    }
+  }
+);
+
+router.post(
+  "/forgot-password/reset",
+  [
+    check("email", "Email không hợp lệ").isEmail(),
+    check("otp", "OTP không hợp lệ").isLength({ min: 6, max: 6 }),
+    check("new_password", "Mật khẩu mới phải có ít nhất 8 ký tự").isLength({
+      min: 8,
+    }),
+    check("confirm_password", "Xác nhận mật khẩu không khớp").custom(
+      (value, { req }) => value === req.body.new_password
+    ),
+  ],
+  async (req, res) => {
+    const { email, otp, new_password, confirm_password } = req.body;
+
+    try {
+      let user = await User.findOne({ email });
+
+      if (!user) {
+        return res.status(400).json({ msg: "Email không tồn tại" });
+      }
+
+      // Kiểm tra OTP hợp lệ
+      if (user.otp !== otp || user.otpExpires < new Date()) {
+        return res
+          .status(400)
+          .json({ msg: "OTP không hợp lệ hoặc đã hết hạn" });
+      }
+
+      // Kiểm tra xác nhận mật khẩu mới
+      if (new_password !== confirm_password) {
+        return res.status(400).json({ msg: "Xác nhận mật khẩu không khớp" });
+      }
+
+      // Băm mật khẩu mới
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(new_password, salt);
+
+      // Cập nhật mật khẩu mới và xóa OTP
+      user.password = hashedPassword;
+      user.otp = null;
+      user.otpExpires = null;
+      await user.save();
+
+      res.status(200).json({ msg: "Mật khẩu đã được cập nhật thành công" });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Lỗi máy chủ");
+    }
+  }
+);
+
+
 
 
 module.exports = router;

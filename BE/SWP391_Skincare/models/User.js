@@ -7,10 +7,10 @@ const UserSchema = new mongoose.Schema(
     password: { type: String },
     role: {
       type: String,
-      enum: ["user", "admin", "Skincare_Staff ", "manager", "staff"],
+      enum: ["user", "admin", "Skincare_Staff", "manager", "staff"],
       default: "user",
     },
-    otp: { type: String }, 
+    otp: { type: String },
     otpExpires: { type: Date },
     isVerified: { type: Boolean, default: false },
   },

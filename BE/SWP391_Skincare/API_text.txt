@@ -4,7 +4,9 @@ Verify-OTP: http://localhost:5000/api/auth/verify-otp
 Category: http://localhost:5000/api/categories/
 Product: http://localhost:5000/api/products/
 Voucher: http://localhost:5000/api/vouchers
-
+Forgot_password: 
++ Send email: http://localhost:5000/api/auth/forgot-password/send-otp
++ Reset: http://localhost:5000/api/auth/forgot-password/reset
 API test:
 Category: 
 {
@@ -64,4 +66,22 @@ Kiểm tra & áp dụng voucher:
 {
   "code": "DISCOUNT20",
   "orderValue": 500000
+}
+
+- Send_OTP: 
++ APi: http://localhost:5000/api/auth/forgot-password/send-otp
++ JSON:
+{
+  "email": "vxdat13@gmail.com"
+}
+
+
++Reset: http://localhost:5000/api/auth/forgot-password/reset
++ JSON: 
+{
+    "email": "vxdat13@gmail.com",
+    "otp": "329143",
+    "old_password": "password123",
+    "new_password": "newpassword456",
+    "confirm_password": "newpassword456"
 }
