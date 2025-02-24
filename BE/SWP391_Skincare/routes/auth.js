@@ -13,9 +13,13 @@ router.post(
     check("username", "Tên người dùng không được để trống").not().isEmpty(),
     check("email", "Email không hợp lệ").isEmail(),
     check("password", "Mật khẩu phải có ít nhất 8 ký tự").isLength({ min: 8 }),
-    check("role", "Vai trò không hợp lệ")
+    check("phone_number", "Số điện thoại không hợp lệ")
       .optional()
-      .isIn(["user", "admin", "moderator"]),
+      .isMobilePhone(),
+    check("gender", "Giới tính không hợp lệ")
+      .optional()
+      .isIn(["male", "female", "other"]),
+    check("address", "Địa chỉ không hợp lệ").optional().isString(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -23,7 +27,16 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, email, password, role } = req.body;
+    const {
+      username,
+      email,
+      password,
+      role,
+      phone_number,
+      gender,
+      address,
+      avatar,
+    } = req.body;
 
     try {
       let user = await User.findOne({ email });
@@ -31,13 +44,11 @@ router.post(
         return res.status(400).json({ msg: "Email đã được sử dụng" });
       }
 
-      // Băm mật khẩu ngay lập tức
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      // Tạo mã OTP ngẫu nhiên (6 số)
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
+      const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
 
       user = new User({
         username,
@@ -47,21 +58,16 @@ router.post(
         otp,
         otpExpires,
         isVerified: false,
+        phone_number,
+        gender,
+        address,
+        avatar: avatar || "default-avatar.png",
       });
 
       await user.save();
       await sendOTP(email, otp);
 
-      const response = {
-        msg: "Mã OTP đã được gửi đến email. Vui lòng xác thực!",
-        email,
-      };
-
-      if (process.env.NODE_ENV === "development") {
-        response.otp = otp;
-      }
-
-      res.status(200).json(response);
+      res.status(200).json({ msg: "Mã OTP đã được gửi đến email", email });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");

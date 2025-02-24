@@ -31,10 +31,9 @@ router.get("/:id", async (req, res) => {
 
 // Cập nhật thông tin người dùng
 router.put("/:id", async (req, res) => {
-  const { username, email, role } = req.body;
+  const { username, email, role, phone, gender, avatar } = req.body;
 
   try {
-    // Kiểm tra ID hợp lệ
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ msg: "ID không hợp lệ" });
     }
@@ -60,24 +59,27 @@ router.put("/:id", async (req, res) => {
       updated = true;
     }
 
-    // Nếu không có sự thay đổi nào
+    if (phone && phone !== user.phone) {
+      user.phone = phone;
+      updated = true;
+    }
+
+    if (gender && gender !== user.gender) {
+      user.gender = gender;
+      updated = true;
+    }
+
+    if (avatar && avatar !== user.avatar) {
+      user.avatar = avatar;
+      updated = true;
+    }
+
     if (!updated) {
       return res.status(400).json({ msg: "Không có thay đổi nào để cập nhật" });
     }
 
-    // Lưu người dùng sau khi cập nhật
     await user.save();
-
-    // Trả về thông tin người dùng đã cập nhật
-    res.json({
-      msg: "Cập nhật thành công",
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    res.json({ msg: "Cập nhật thành công", user });
   } catch (err) {
     console.error("Lỗi cập nhật:", err);
     res.status(500).send("Lỗi máy chủ");
@@ -87,12 +89,11 @@ router.put("/:id", async (req, res) => {
 // Xóa người dùng (Admin)
 router.delete("/:id", async (req, res) => {
   try {
-    // Kiểm tra ID hợp lệ
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ msg: "ID không hợp lệ" });
     }
 
-    const user = await User.findByIdAndDelete(req.params.id); 
+    const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {
       return res.status(404).json({ msg: "Người dùng không tìm thấy" });
     }
@@ -103,6 +104,5 @@ router.delete("/:id", async (req, res) => {
     res.status(500).send("Lỗi máy chủ, vui lòng thử lại sau.");
   }
 });
-
 
 module.exports = router;
