@@ -6,7 +6,7 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/auth");
 const voucherRoutes = require("./routes/voucherRoutes");
-const userRoutes = require("./routes/user"); // Đảm bảo đúng đường dẫn
+const userRoutes = require("./routes/userRoutes"); // Đảm bảo đúng đường dẫn
 const app = express();
 
 // Middleware

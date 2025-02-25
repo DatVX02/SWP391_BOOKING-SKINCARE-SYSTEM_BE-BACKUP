@@ -6,6 +6,7 @@ const User = require("../models/User");
 const router = express.Router();
 const { sendOTP } = require("../utils/email");
 const { sendResetPasswordOTP } = require("../utils/email");
+const { sendAdminVerificationEmail } = require("../utils/email");
 //Đăng ký tài khoản
 router.post(
   "/register",
@@ -47,16 +48,11 @@ router.post(
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
-
       user = new User({
         username,
         email,
         password: hashedPassword,
         role: role || "user",
-        otp,
-        otpExpires,
         isVerified: false,
         phone_number,
         gender,
@@ -65,9 +61,27 @@ router.post(
       });
 
       await user.save();
-      await sendOTP(email, otp);
 
-      res.status(200).json({ msg: "Mã OTP đã được gửi đến email", email });
+      if (role === "admin") {
+        const verifyToken = jwt.sign(
+          { email: user.email },
+          process.env.JWT_SECRET,
+          { expiresIn: "24h" }
+        );
+
+        const verifyLink = `http://localhost:5000/api/auth/auto-verify`;
+        await sendAdminVerificationEmail(email, verifyLink);
+      } else {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.otp = otp;
+        user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+        await user.save();
+        await sendOTP(email, otp);
+      }
+
+      res
+        .status(200)
+        .json({ msg: "Tài khoản đã được tạo. Kiểm tra email để xác thực." });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
@@ -332,4 +346,25 @@ router.post(
     }
   }
 );
+
+router.get("/auto-verify", async (req, res) => {
+  const { token } = req.query;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(400).json({ msg: "Người dùng không tồn tại" });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    res.redirect("http://localhost:3000/login");
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
+  }
+});
 module.exports = router;
