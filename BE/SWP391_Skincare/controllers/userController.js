@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 const { check, validationResult } = require("express-validator");
 
 // ✅ Lấy tất cả người dùng (Admin)
@@ -51,10 +52,13 @@ const createUser = async (req, res) => {
       return res.status(400).json({ msg: "Email đã được sử dụng" });
     }
 
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const newUser = new User({
       username,
       email,
-      password,
+      password: hashedPassword,
       role: role || "user",
       isVerified: false,
       phone_number,
@@ -71,31 +75,34 @@ const createUser = async (req, res) => {
   }
 };
 
-// ✅ Cập nhật thông tin người dùng
+// ✅ Cập nhật thông tin người dùng (Giữ nguyên mật khẩu nếu không thay đổi)
 const updateUser = async (req, res) => {
-  const { username, email, role, phone_number, gender, avatar } = req.body;
+  const { username, email, role, phone_number, gender, avatar, password } =
+    req.body;
 
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ msg: "ID không hợp lệ" });
-    }
-
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ msg: "Người dùng không tìm thấy" });
     }
 
-    if (username) user.username = username;
-    if (email) user.email = email;
-    if (role) user.role = role;
-    if (phone_number) user.phone_number = phone_number;
-    if (gender) user.gender = gender;
-    if (avatar) user.avatar = avatar;
+    // Cập nhật các trường có trong request
+    Object.keys(req.body).forEach((key) => {
+      if (req.body[key] !== undefined && key !== "password") {
+        user[key] = req.body[key];
+      }
+    });
+
+    // Nếu có mật khẩu mới, băm mật khẩu trước khi cập nhật
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
 
     await user.save();
     res.json({ msg: "Cập nhật thành công", user });
   } catch (err) {
-    console.error(err.message);
+    console.error("Lỗi cập nhật:", err);
     res.status(500).send("Lỗi máy chủ");
   }
 };
