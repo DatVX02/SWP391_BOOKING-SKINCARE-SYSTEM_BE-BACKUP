@@ -65,10 +65,10 @@ const sendAdminVerificationEmail = async (email, verifyLink) => {
   const mailOptions = {
     from: `"vxdat13@gmail.com" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: "Xác thực tài khoản Admin",
+    subject: "Xác thực tài khoản",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-        <h2 style="color: #333; text-align: center;">Xác Thực Tài Khoản Admin</h2>
+        <h2 style="color: #333; text-align: center;">Xác Thực Tài Khoản</h2>
         <p>Xin chào,</p>
         <p>Bạn đã được tạo tài khoản Admin. Để hoàn tất quá trình xác thực, vui lòng nhấp vào đường dẫn sau:</p>
         <div style="text-align: center; padding: 10px;">

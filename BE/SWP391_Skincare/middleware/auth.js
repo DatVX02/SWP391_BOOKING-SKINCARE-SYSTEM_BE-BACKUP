@@ -2,7 +2,8 @@ const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
   const token = req.header("x-auth-token");
-  if (!token) {
+
+  if (!token || token === "null" || token === "undefined") {
     return res.status(401).json({ msg: "Không có token, truy cập bị từ chối" });
   }
 
@@ -11,7 +12,7 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded.user;
     next();
   } catch (err) {
-    res.status(401).json({ msg: "Token không hợp lệ" });
+    return res.status(401).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
   }
 };
 
