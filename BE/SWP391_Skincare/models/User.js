@@ -8,13 +8,13 @@ const UserSchema = new mongoose.Schema(
     phone_number: { type: String },
     gender: {
       type: String,
-      enum: ["male", "female", "other"],
+      enum: ["male", "female"],
       default: "other",
     },
     address: { type: String },
     role: {
       type: String,
-      enum: ["user", "admin", "Skincare_Staff", "manager", "staff"],
+      enum: ["user", "admin", "skincare_staff", "manager", "staff"],
       default: "user",
     },
     avatar: { type: String, default: "default-avatar.png" },

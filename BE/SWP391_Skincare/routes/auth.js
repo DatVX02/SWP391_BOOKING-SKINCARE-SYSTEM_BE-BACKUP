@@ -62,14 +62,14 @@ router.post(
 
       await user.save();
 
-      if (role === "admin") {
+      if (["admin", "Skincare_Staff", "manager", "staff"].includes(role)) {
         const verifyToken = jwt.sign(
           { email: user.email },
           process.env.JWT_SECRET,
           { expiresIn: "24h" }
         );
 
-        const verifyLink = `http://localhost:5000/api/auth/auto-verify`;
+        const verifyLink = `http://localhost:5000/api/auth/auto-verify?token=${verifyToken}`;
         await sendAdminVerificationEmail(email, verifyLink);
       } else {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -81,7 +81,10 @@ router.post(
 
       res
         .status(200)
-        .json({ msg: "Tài khoản đã được tạo. Kiểm tra email để xác thực." });
+        .json({
+          msg: "Tài khoản đã được tạo. Kiểm tra email để xác thực.",
+          email,
+        });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
@@ -350,6 +353,12 @@ router.post(
 router.get("/auto-verify", async (req, res) => {
   const { token } = req.query;
 
+  if (!token) {
+    return res
+      .status(400)
+      .json({ msg: "Token không hợp lệ hoặc không được cung cấp" });
+  }
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     let user = await User.findOne({ email: decoded.email });
@@ -361,10 +370,12 @@ router.get("/auto-verify", async (req, res) => {
     user.isVerified = true;
     await user.save();
 
-    res.redirect("http://localhost:3000/login");
+    res.redirect("http://localhost:5000/login");
   } catch (err) {
     console.error(err);
-    res.status(400).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
+    return res.status(400).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
   }
 });
+
+
 module.exports = router;
