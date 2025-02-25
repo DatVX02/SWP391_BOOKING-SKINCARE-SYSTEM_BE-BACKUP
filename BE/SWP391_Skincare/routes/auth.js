@@ -62,7 +62,7 @@ router.post(
 
       await user.save();
 
-      if (["admin", "Skincare_Staff", "manager", "staff"].includes(role)) {
+      if (["admin", "skincare_staff", "manager", "staff"].includes(role)) {
         const verifyToken = jwt.sign(
           { email: user.email },
           process.env.JWT_SECRET,
@@ -370,7 +370,7 @@ router.get("/auto-verify", async (req, res) => {
     user.isVerified = true;
     await user.save();
 
-    res.redirect("http://localhost:5000/login");
+    res.redirect("http://localhost:3000/login");
   } catch (err) {
     console.error(err);
     return res.status(400).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
