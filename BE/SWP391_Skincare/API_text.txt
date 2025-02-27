@@ -7,6 +7,13 @@ Voucher: http://localhost:5000/api/vouchers
 Forgot_password: 
 + Send email: http://localhost:5000/api/auth/forgot-password/send-otp
 + Reset: http://localhost:5000/api/auth/forgot-password/reset
+
+Payment: 
+POST Create: http://localhost:5000/api/payments/create
+GET Getall: http://localhost:5000/api/payments/
+GET GetbyID: http://localhost:5000/api/payments/:orderCode
+PUT Update: http://localhost:5000/api/payments/update/:orderCode
+
 API test:
 Category: 
 {
