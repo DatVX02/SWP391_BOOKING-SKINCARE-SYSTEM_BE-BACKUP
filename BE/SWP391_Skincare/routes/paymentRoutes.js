@@ -88,7 +88,6 @@ router.get("/:orderId", async (req, res) => {
   }
 });
 
-
 // 🔹 API cập nhật trạng thái thanh toán
 router.put("/update/:orderCode", async (req, res) => {
   try {
@@ -131,6 +130,23 @@ router.put("/update/:orderCode", async (req, res) => {
   }
 });
 
-
+// 🔹 API lấy thông tin tất cả thanh toán
+router.get("/", async (req, res) => {
+  try {
+    const payments = await Payment.find();
+    return res.json({
+      error: 0,
+      message: "All payments retrieved",
+      data: payments,
+    });
+  } catch (error) {
+    console.error("Get All Payments Error:", error);
+    return res.status(500).json({
+      error: -1,
+      message: "Failed to fetch payments",
+      data: null,
+    });
+  }
+});
 
 module.exports = router;
