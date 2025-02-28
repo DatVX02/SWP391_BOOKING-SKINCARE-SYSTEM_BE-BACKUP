@@ -31,7 +31,7 @@ router.post("/create", async (req, res) => {
     const paymentLinkRes = await payOS.createPaymentLink({
       orderCode,
       amount,
-      description: truncatedDescription, // Dùng mô tả đã giới hạn
+      description: truncatedDescription, 
       returnUrl,
       cancelUrl,
       orderName,
@@ -45,11 +45,11 @@ router.post("/create", async (req, res) => {
         qrCode: paymentLinkRes.qrCode,
         orderCode: paymentLinkRes.orderCode,
         amount: paymentLinkRes.amount,
-        description: truncatedDescription, // Trả về mô tả đã cắt
+        description: truncatedDescription, 
       },
     });
   } catch (error) {
-    console.error("🔴 Create Payment Error:", error);
+    console.error("Create Payment Error:", error);
     return res.status(500).json({
       error: -1,
       message: "Failed to create payment link",
