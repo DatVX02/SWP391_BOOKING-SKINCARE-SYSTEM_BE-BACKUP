@@ -11,6 +11,7 @@ const webhookRoutes = require("./routes/webhookRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const payOS = require("./utils/payos");
 const cartRoutes = require("./routes/cartRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 const app = express();
 
 // Middleware
@@ -52,6 +53,8 @@ app.use("/api/vouchers", voucherRoutes);
 
 //cart
 app.use("/api/cart", cartRoutes);
+
+app.use("/api/reviews", reviewRoutes);
 // Connect DB
 mongoose
   .connect(process.env.MONGO_URI, {
