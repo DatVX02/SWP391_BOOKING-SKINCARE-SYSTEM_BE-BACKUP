@@ -3,7 +3,7 @@ const router = express.Router();
 const payOS = require("../utils/payos");
 const Payment = require("../models/Payment");
 
-// 🔹 API tạo link thanh toán
+//API tạo link thanh toán
 router.post("/create", async (req, res) => {
   const { orderName, description, returnUrl, cancelUrl, amount } = req.body;
 
