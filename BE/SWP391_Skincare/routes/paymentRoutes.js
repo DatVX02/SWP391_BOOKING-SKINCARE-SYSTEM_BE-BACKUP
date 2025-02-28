@@ -7,31 +7,31 @@ const Payment = require("../models/Payment");
 router.post("/create", async (req, res) => {
   const { orderName, description, returnUrl, cancelUrl, amount } = req.body;
 
-  if (!amount || amount <= 0) {
-    return res.status(400).json({ error: -1, message: "Invalid amount" });
+  if (
+    !orderName ||
+    !description ||
+    !returnUrl ||
+    !cancelUrl ||
+    !amount ||
+    amount <= 0
+  ) {
+    return res.status(400).json({
+      error: -1,
+      message: "Missing or invalid required fields",
+    });
   }
+
+  // Giới hạn mô tả tối đa 25 ký tự
+  const truncatedDescription =
+    description.length > 25 ? description.substring(0, 25) : description;
 
   const orderCode = Number(String(new Date().getTime()).slice(-6));
 
   try {
-    // Lưu vào MongoDB trước khi gửi tới PayOS
-    const newPayment = new Payment({
-      orderCode,
-      orderName,
-      description,
-      amount,
-      returnUrl,
-      cancelUrl,
-      status: "pending",
-    });
-
-    await newPayment.save();
-
-    // Gửi yêu cầu tạo link thanh toán
     const paymentLinkRes = await payOS.createPaymentLink({
       orderCode,
       amount,
-      description,
+      description: truncatedDescription, // Dùng mô tả đã giới hạn
       returnUrl,
       cancelUrl,
       orderName,
@@ -41,26 +41,23 @@ router.post("/create", async (req, res) => {
       error: 0,
       message: "Success",
       data: {
-        bin: paymentLinkRes.bin,
         checkoutUrl: paymentLinkRes.checkoutUrl,
-        accountNumber: paymentLinkRes.accountNumber,
-        accountName: paymentLinkRes.accountName,
-        amount: paymentLinkRes.amount,
-        description: paymentLinkRes.description,
-        orderCode: paymentLinkRes.orderCode,
         qrCode: paymentLinkRes.qrCode,
-        orderName: orderName,
+        orderCode: paymentLinkRes.orderCode,
+        amount: paymentLinkRes.amount,
+        description: truncatedDescription, // Trả về mô tả đã cắt
       },
     });
   } catch (error) {
-    console.error("Create Payment Error:", error);
+    console.error("🔴 Create Payment Error:", error);
     return res.status(500).json({
       error: -1,
       message: "Failed to create payment link",
-      data: null,
+      data: error.message,
     });
   }
 });
+
 
 // 🔹 API kiểm tra trạng thái thanh toán
 router.get("/:orderId", async (req, res) => {
