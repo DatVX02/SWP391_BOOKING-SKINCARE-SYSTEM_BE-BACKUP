@@ -12,6 +12,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const payOS = require("./utils/payos");
 const cartRoutes = require("./routes/cartRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const questionRoutes = require("./routes/questionRoutes");
 const app = express();
 
 // Middleware
@@ -55,6 +56,7 @@ app.use("/api/vouchers", voucherRoutes);
 app.use("/api/cart", cartRoutes);
 
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/questions", questionRoutes);
 // Connect DB
 mongoose
   .connect(process.env.MONGO_URI, {
@@ -62,7 +64,8 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
+  .catch((err) => console.log("MongoDB Connection Error:", err));
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));

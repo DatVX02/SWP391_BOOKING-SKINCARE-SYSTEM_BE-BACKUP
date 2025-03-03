@@ -31,11 +31,24 @@ router.post("/create", async (req, res) => {
     const paymentLinkRes = await payOS.createPaymentLink({
       orderCode,
       amount,
-      description: truncatedDescription, 
+      description: truncatedDescription,
       returnUrl,
       cancelUrl,
       orderName,
     });
+
+    // 🔹 Lưu vào MongoDB
+    const newPayment = new Payment({
+      orderCode,
+      orderName,
+      amount,
+      description: truncatedDescription,
+      status: "pending",
+      returnUrl,
+      cancelUrl,
+    });
+
+    await newPayment.save(); // Lưu vào MongoDB
 
     return res.json({
       error: 0,
@@ -45,7 +58,7 @@ router.post("/create", async (req, res) => {
         qrCode: paymentLinkRes.qrCode,
         orderCode: paymentLinkRes.orderCode,
         amount: paymentLinkRes.amount,
-        description: truncatedDescription, 
+        description: truncatedDescription,
       },
     });
   } catch (error) {
