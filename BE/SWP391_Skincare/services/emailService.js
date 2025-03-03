@@ -43,9 +43,14 @@ const sendOrderConfirmationEmail = async (email, order) => {
                 <li style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Nhân viên:</strong> ${
                   order.Skincare_staff || "Chưa xác định"
                 }</li>
-                <li style="padding: 8px 0; font-size: 18px; font-weight: bold; color: #E91E63;"><strong>Tổng tiền:</strong> ${
-                  order.totalPrice
-                } VND</li>
+                <li style="padding: 8px 0; font-size: 18px; font-weight: bold; color: #E91E63;">
+                  <strong>Tổng tiền:</strong> ${new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  })
+                    .format(order.totalPrice)
+                    .replace("₫", "VNĐ")}
+</li>
             </ul>
 
             <p style="color: #f44336; font-weight: bold; text-align: center; font-size: 16px;">
