@@ -49,7 +49,7 @@ const sendOrderConfirmationEmail = async (email, order) => {
                     currency: "VND",
                   })
                     .format(order.totalPrice)
-                    .replace("₫", "VNĐ")}
+                    .replace("₫", "VNĐ")
 </li>
             </ul>
 
