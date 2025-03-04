@@ -1,4 +1,4 @@
-require("dotenv").config();
+  require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -13,6 +13,7 @@ const payOS = require("./utils/payos");
 const cartRoutes = require("./routes/cartRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const questionRoutes = require("./routes/questionRoutes");
+const ratingRoutes = require("./routes/ratingRoutes");
 const app = express();
 
 // Middleware
@@ -57,6 +58,9 @@ app.use("/api/cart", cartRoutes);
 
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/questions", questionRoutes);
+
+//rating 
+app.use("/ratings", ratingRoutes);
 // Connect DB
 mongoose
   .connect(process.env.MONGO_URI, {

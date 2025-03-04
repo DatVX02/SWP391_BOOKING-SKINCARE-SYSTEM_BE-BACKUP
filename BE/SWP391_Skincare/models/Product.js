@@ -5,7 +5,7 @@ const ProductSchema = new mongoose.Schema(
     service_id: { type: Number, unique: true },
     name: { type: String, required: true },
     description: { type: String },
-    price: { type: Number, required: true }, 
+    price: { type: Number, required: true },
     duration: { type: Number, required: true },
     category: {
       type: mongoose.Schema.Types.ObjectId,
@@ -18,10 +18,5 @@ const ProductSchema = new mongoose.Schema(
   },
   { timestamps: false }
 );
-
-ProductSchema.pre("save", function (next) {
-  this.updateDate = new Date();
-  next();
-});
 
 module.exports = mongoose.model("Product", ProductSchema);
