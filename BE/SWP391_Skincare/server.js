@@ -14,6 +14,7 @@ const cartRoutes = require("./routes/cartRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const questionRoutes = require("./routes/questionRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
+const blogRoutes = require("./routes/blogRoutes");
 const app = express();
 
 // Middleware
@@ -56,8 +57,14 @@ app.use("/api/vouchers", voucherRoutes);
 //cart
 app.use("/api/cart", cartRoutes);
 
+//review
 app.use("/api/reviews", reviewRoutes);
+
+//question
 app.use("/api/questions", questionRoutes);
+
+//blog
+app.use("/blogs", blogRoutes);
 
 //rating 
 app.use("/ratings", ratingRoutes);
