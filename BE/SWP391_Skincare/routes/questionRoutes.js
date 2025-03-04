@@ -5,7 +5,7 @@ const router = express.Router();
 // Lấy tất cả câu hỏi
 router.get("/", async (req, res) => {
   try {
-    const questions = await Question.find().lean(); // Chuyển đổi sang object thuần túy
+    const questions = await Question.find().lean();
     res.json(questions);
   } catch (err) {
     console.error("Lỗi khi lấy danh sách câu hỏi:", err);
@@ -19,7 +19,9 @@ router.post("/", async (req, res) => {
     const data = req.body;
 
     if (!data || (Array.isArray(data) && data.length === 0)) {
-      return res.status(400).json({ message: "Dữ liệu không hợp lệ hoặc rỗng!" });
+      return res
+        .status(400)
+        .json({ message: "Dữ liệu không hợp lệ hoặc rỗng!" });
     }
 
     let questionsToInsert = [];
@@ -33,7 +35,9 @@ router.post("/", async (req, res) => {
       });
     } else {
       if (!data.text || !Array.isArray(data.options)) {
-        return res.status(400).json({ message: "Dữ liệu câu hỏi không hợp lệ!" });
+        return res
+          .status(400)
+          .json({ message: "Dữ liệu câu hỏi không hợp lệ!" });
       }
       questionsToInsert.push(new Question(data));
     }
@@ -46,14 +50,61 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Cập nhật một câu hỏi
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    if (!updateData || !updateData.text || !Array.isArray(updateData.options)) {
+      return res
+        .status(400)
+        .json({ message: "Dữ liệu cập nhật không hợp lệ!" });
+    }
+
+    const updatedQuestion = await Question.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedQuestion) {
+      return res.status(404).json({ message: "Câu hỏi không tồn tại!" });
+    }
+
+    res.json(updatedQuestion);
+  } catch (err) {
+    console.error("Lỗi khi cập nhật câu hỏi:", err);
+    res.status(500).json({ message: "Lỗi server!" });
+  }
+});
+
+// Xóa một câu hỏi
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedQuestion = await Question.findByIdAndDelete(id);
+
+    if (!deletedQuestion) {
+      return res.status(404).json({ message: "Câu hỏi không tồn tại!" });
+    }
+
+    res.json({ message: "Câu hỏi đã được xóa thành công!" });
+  } catch (err) {
+    console.error("Lỗi khi xóa câu hỏi:", err);
+    res.status(500).json({ message: "Lỗi server!" });
+  }
+});
+
 // Nhận câu trả lời từ người dùng
 router.post("/submit", async (req, res) => {
-    console.log("Request received:", req.body);
+  console.log("Request received:", req.body);
   try {
     const { answers } = req.body;
 
     if (!answers || !Array.isArray(answers) || answers.length === 0) {
-      return res.status(400).json({ message: "Danh sách câu trả lời không hợp lệ!" });
+      return res
+        .status(400)
+        .json({ message: "Danh sách câu trả lời không hợp lệ!" });
     }
 
     let skinScores = { dry: 0, oily: 0, sensitive: 0, aging: 0, acne: 0 };
@@ -62,12 +113,16 @@ router.post("/submit", async (req, res) => {
       const { questionId, selectedOptionIndex } = answer;
 
       if (!questionId || selectedOptionIndex === undefined) {
-        return res.status(400).json({ message: "Dữ liệu câu trả lời không hợp lệ!" });
+        return res
+          .status(400)
+          .json({ message: "Dữ liệu câu trả lời không hợp lệ!" });
       }
 
       const question = await Question.findById(questionId).lean();
       if (!question) {
-        return res.status(404).json({ message: `Câu hỏi với ID ${questionId} không tồn tại!` });
+        return res
+          .status(404)
+          .json({ message: `Câu hỏi với ID ${questionId} không tồn tại!` });
       }
 
       const selectedOption = question.options[selectedOptionIndex];
@@ -82,12 +137,14 @@ router.post("/submit", async (req, res) => {
       }
     }
 
-    let bestSkinType = Object.keys(skinScores).reduce((a, b) => (skinScores[a] > skinScores[b] ? a : b));
+    let bestSkinType = Object.keys(skinScores).reduce((a, b) =>
+      skinScores[a] > skinScores[b] ? a : b
+    );
 
     res.json({
       message: "Bài kiểm tra hoàn thành!",
       scores: skinScores,
-      bestMatch: bestSkinType
+      bestMatch: bestSkinType,
     });
   } catch (err) {
     console.error("Lỗi khi xử lý bài kiểm tra:", err);
