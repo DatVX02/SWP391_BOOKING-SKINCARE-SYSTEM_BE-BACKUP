@@ -8,7 +8,7 @@ const UserSchema = new mongoose.Schema(
     phone_number: { type: String },
     gender: {
       type: String,
-      enum: ["male", "female"],
+      enum: ["male", "female", "other"],
       default: "other",
     },
     address: { type: String },
@@ -21,6 +21,9 @@ const UserSchema = new mongoose.Schema(
     otp: { type: String },
     otpExpires: { type: Date },
     isVerified: { type: Boolean, default: false },
+
+    // 🔥 Thêm trường token để lưu JWT
+    token: { type: String, default: null },
   },
   { timestamps: true }
 );

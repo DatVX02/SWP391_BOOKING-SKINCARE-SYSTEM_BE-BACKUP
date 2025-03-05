@@ -160,21 +160,23 @@ router.post(
         },
       };
 
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token, username: user.username, role: user.role });
-        }
-      );
+      // 🔥 Tạo token
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      // 🔥 Lưu token vào DB
+      user.token = token;
+      await user.save();
+
+      res.json({ token, username: user.username, role: user.role });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
     }
   }
 );
+
 
 const authMiddleware = (req, res, next) => {
   const token = req.header("x-auth-token");

@@ -3,7 +3,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { check, validationResult } = require("express-validator");
 
-// ✅ Lấy tất cả người dùng (Admin)
+// ✅ Lấy tất cả người dùng (Chỉ Admin)
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
@@ -75,7 +75,7 @@ const createUser = async (req, res) => {
   }
 };
 
-// ✅ Cập nhật thông tin người dùng (Giữ nguyên mật khẩu nếu không thay đổi)
+// ✅ Cập nhật thông tin người dùng
 const updateUser = async (req, res) => {
   const { username, email, role, phone_number, gender, avatar, password } =
     req.body;
@@ -126,6 +126,28 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// 📌 Lấy danh sách nhân viên có role "skincare_staff" (Cho phép user bình thường truy cập)
+const getSkincareStaff = async (req, res) => {
+  try {
+
+    const staffList = await User.find({ role: "skincare_staff" }).select(
+      "-password"
+    );
+
+    if (!staffList.length) {
+      console.log("⚠️ Không tìm thấy nhân viên skincare_staff.");
+      return res
+        .status(404)
+        .json({ msg: "Không tìm thấy nhân viên skincare_staff" });
+    }
+
+    res.json(staffList);
+  } catch (err) {
+    console.error("❌ Lỗi máy chủ khi lấy nhân viên:", err);
+    res.status(500).send("Lỗi máy chủ");
+  }
+};
+
 // ✅ Xuất các hàm
 module.exports = {
   getAllUsers,
@@ -133,4 +155,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  getSkincareStaff,
 };
