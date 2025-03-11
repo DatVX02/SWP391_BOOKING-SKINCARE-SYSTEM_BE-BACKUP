@@ -3,10 +3,11 @@ const { v4: uuidv4 } = require("uuid");
 
 const CartSchema = new mongoose.Schema({
   CartID: { type: String, default: uuidv4 },
+  username: { type: String, required: true }, // 🔥 Dùng username để xác định chủ giỏ hàng
   Status: { type: String, default: "Active" },
   BookingID: { type: String, required: true },
   customerName: { type: String, required: true },
-  customerEmail: { type: String, required: true },
+  customerEmail: { type: String, required: true }, // 🔥 Email chỉ để gửi thông tin, không dùng để lấy đơn hàng
   customerPhone: { type: String, required: true },
   notes: { type: String },
   service_id: { type: Number, required: true },
@@ -23,3 +24,5 @@ const CartSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model("Cart", CartSchema);
+
+

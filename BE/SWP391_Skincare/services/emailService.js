@@ -59,7 +59,7 @@ const sendOrderConfirmationEmail = async (email, order) => {
             <p style="text-align: center;">Cảm ơn bạn đã tin tưởng sử dụng dịch vụ! 💖</p>
             
             <div style="text-align: center; margin-top: 20px;">
-                <a href='http://localhost:3000/booking-history' style="text-decoration: none;">
+                <a href='http://localhost:3000/dashboard' style="text-decoration: none;">
                     <button style="background-color: #4CAF50; color: white; padding: 12px 24px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer;">
                         Xem dịch vụ đã đặt
                     </button>

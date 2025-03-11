@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 // Hàm gửi OTP cho đăng ký tài khoản
 const sendOTP = async (email, otp) => {
   const mailOptions = {
-    from: `"vxdat13@gmail.com" <${process.env.EMAIL_USER}>`,
+    from: `"LuluSpa" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Mã OTP xác thực tài khoản của bạn",
     html: `
@@ -38,7 +38,7 @@ const sendOTP = async (email, otp) => {
 // Hàm gửi OTP cho reset password
 const sendResetPasswordOTP = async (email, otp) => {
   const mailOptions = {
-    from: `"vxdat13@gmail.com" <${process.env.EMAIL_USER}>`,
+    from: `"LuluSpa" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Mã OTP để đặt lại mật khẩu",
     html: `
@@ -63,7 +63,7 @@ const sendResetPasswordOTP = async (email, otp) => {
 };
 const sendAdminVerificationEmail = async (email, verifyLink) => {
   const mailOptions = {
-    from: `"vxdat13@gmail.com" <${process.env.EMAIL_USER}>`,
+    from: `"LuluSpa" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Xác thực tài khoản",
     html: `

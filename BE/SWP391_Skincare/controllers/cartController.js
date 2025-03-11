@@ -3,7 +3,7 @@ const Product = require("../models/Product");
 const Voucher = require("../models/Voucher");
 const { v4: uuidv4 } = require("uuid");
 const { sendOrderConfirmationEmail } = require("../services/emailService"); // 🔥 Import hàm gửi email
-
+const User = require("../models/User");
 // Hàm tạo BookingID ngẫu nhiên: "BOOK" + 6 số ngẫu nhiên
 const generateBookingID = () => {
   return `BOOK${Math.floor(100000 + Math.random() * 900000)}`; // Ví dụ: BOOK123456
@@ -15,87 +15,91 @@ const getCurrentDate = () => {
   return today.toISOString().split("T")[0]; // Lấy phần YYYY-MM-DD
 };
 
-// Tạo Cart mới với dữ liệu từ Product & Voucher
-exports.  createCart = async (req, res) => {
-    try {
-        const {
-            customerName, customerEmail, customerPhone, notes,
-            service_id, startTime, Skincare_staff, discountCode
-        } = req.body;
-
-        // Kiểm tra dữ liệu đầu vào
-        if (!service_id || !startTime || !customerName || !customerEmail || !customerPhone) {
-            return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin!" });
-        }
-
-        // Tạo BookingID ngẫu nhiên
-        const BookingID = generateBookingID();
-
-        // Lấy ngày hiện tại nếu `bookingDate` không được gửi từ request
-        const bookingDate = getCurrentDate();
-
-        // Tìm sản phẩm theo service_id
-        const product = await Product.findOne({ service_id }).populate("category", "name");
-        if (!product) {
-            return res.status(404).json({ message: "Sản phẩm không tồn tại" });
-        }
-
-        // Lấy thông tin sản phẩm
-        const serviceName = product.name;
-        const serviceType = product.category.name;
-        const duration = product.duration;
-        const totalPrice = product.price;
-
-        // Tính endTime từ startTime + duration
-        const [startHour, startMinute] = startTime.split(":").map(Number);
-        const totalMinutes = startHour * 60 + startMinute + duration;
-        const endHour = Math.floor(totalMinutes / 60);
-        const endMinute = totalMinutes % 60;
-        const endTime = `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
-
-        // Áp dụng Voucher nếu có
-        let discountAmount = 0;
-        if (discountCode) {
-            const voucher = await Voucher.findOne({ code: discountCode, isActive: true });
-            if (voucher && new Date(voucher.expiryDate) > new Date()) {
-                discountAmount = (totalPrice * voucher.discountPercentage) / 100;
-            }
-        }
-
-        // Tạo giỏ hàng mới
-        const newCart = new Cart({
-            CartID: uuidv4(),
-            BookingID,
-            customerName,
-            customerEmail,
-            customerPhone,
-            notes,
-            service_id,
-            serviceName,
-            serviceType,
-            bookingDate,
-            startTime,
-            endTime,
-            duration,
-            totalPrice: totalPrice - discountAmount,
-            currency: "VND",
-            discountCode,
-            Skincare_staff
-        });
-
-        await newCart.save();
-
-        // 🔥 Gửi email xác nhận đơn hàng
-        await sendOrderConfirmationEmail(customerEmail, newCart);
-
-        res.status(201).json({ message: "Cart đã được tạo thành công!", cart: newCart });
-
-    } catch (error) {
-        res.status(500).json({ message: "Lỗi tạo Cart!", error });
-    }
+const calculateEndTime = (startTime, duration) => {
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const totalMinutes = startHour * 60 + startMinute + duration;
+  const endHour = Math.floor(totalMinutes / 60);
+  const endMinute = totalMinutes % 60;
+  return `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(
+    2,
+    "0"
+  )}`;
 };
 
+// Tạo Cart mới với dữ liệu từ Product & Voucher
+exports.createCart = async (req, res) => {
+  try {
+    const {
+      username,
+      customerName,
+      customerEmail,
+      customerPhone,
+      notes,
+      service_id,
+      startTime,
+      Skincare_staff,
+      discountCode,
+    } = req.body;
 
+    if (
+      !username ||
+      !service_id ||
+      !startTime ||
+      !customerName ||
+      !customerPhone
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ thông tin!" });
+    }
+
+    console.log("📌 Username nhận từ frontend:", username); // Kiểm tra username
+
+    const BookingID = generateBookingID();
+    const bookingDate = getCurrentDate();
+
+    const product = await Product.findOne({ service_id }).populate(
+      "category",
+      "name"
+    );
+    if (!product) {
+      return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+    }
+
+    const newCart = new Cart({
+      CartID: uuidv4(),
+      BookingID,
+      username,
+      customerName,
+      customerEmail,
+      customerPhone,
+      notes,
+      service_id,
+      serviceName: product.name,
+      serviceType: product.category.name,
+      bookingDate,
+      startTime,
+      endTime: calculateEndTime(startTime, product.duration), // 🔥 Sửa lỗi ở đây
+      duration: product.duration,
+      totalPrice:
+        product.price -
+        (discountCode ? calculateDiscount(product.price, discountCode) : 0),
+      currency: "VND",
+      discountCode,
+      Skincare_staff,
+    });
+
+    await newCart.save();
+    await sendOrderConfirmationEmail(customerEmail, newCart);
+
+    res
+      .status(201)
+      .json({ message: "Cart đã được tạo thành công!", cart: newCart });
+  } catch (error) {
+    console.error("📌 Lỗi khi tạo giỏ hàng:", error);
+    res.status(500).json({ message: "Lỗi tạo Cart!", error });
+  }
+};
 // Lấy danh sách Cart
 exports.getAllCarts = async (req, res) => {
   try {
@@ -105,12 +109,36 @@ exports.getAllCarts = async (req, res) => {
     res.status(500).json({ message: "Lỗi lấy danh sách Cart!", error });
   }
 };
+exports.getCartsByUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+    const decodedUsername = decodeURIComponent(username);
+
+    // 🔥 Chỉ lấy đơn hàng của `username` hiện tại
+    const carts = await Cart.find({ username: decodedUsername });
+
+    if (!carts.length) {
+      return res.status(404).json({ message: "Không tìm thấy giỏ hàng nào!" });
+    }
+
+    res.status(200).json(carts);
+  } catch (error) {
+    console.error("Lỗi khi lấy giỏ hàng theo username:", error);
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lấy giỏ hàng!", error: error.message });
+  }
+};
+
 
 // 🔹 Lấy Cart theo `CartID`
 exports.getCartById = async (req, res) => {
   try {
     const { cartID } = req.params;
-    const cart = await Cart.findOne({ CartID: cartID });
+    const cart = await Cart.findOne({ CartID: cartID }).populate(
+      "userId",
+      "username email"
+    );
     if (!cart) return res.status(404).json({ message: "Không tìm thấy Cart!" });
     res.status(200).json(cart);
   } catch (error) {
