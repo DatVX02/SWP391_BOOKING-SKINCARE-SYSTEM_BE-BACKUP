@@ -67,7 +67,7 @@ app.use("/api/questions", questionRoutes);
 app.use("/blogs", blogRoutes);
 
 //rating 
-app.use("/ratings", ratingRoutes);
+app.use("/api/ratings", ratingRoutes);
 // Connect DB
 mongoose
   .connect(process.env.MONGO_URI, {

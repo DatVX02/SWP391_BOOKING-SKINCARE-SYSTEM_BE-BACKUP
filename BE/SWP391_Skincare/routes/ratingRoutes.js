@@ -11,6 +11,8 @@ router.get("/", ratingController.getRatings);
 // API lấy đánh giá theo ID
 router.get("/:id", ratingController.getRatingById);
 
+router.get("/service/:serviceName", ratingController.getRatingsByServiceName);
+
 // API cập nhật đánh giá
 router.put("/:id", ratingController.updateRating);
 

@@ -54,6 +54,23 @@ exports.getRatingById = async (req, res) => {
   }
 };
 
+exports.getRatingsByServiceName = async (req, res) => {
+  try {
+    const { serviceName } = req.params;
+    const ratings = await Rating.find({ serviceName });
+
+    if (ratings.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No ratings found for this service" });
+    }
+
+    res.json(ratings);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 exports.updateRating = async (req, res) => {
   try {
     const { id } = req.params;
