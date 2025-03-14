@@ -7,37 +7,6 @@ const router = express.Router();
 const { sendOTP } = require("../utils/email");
 const { sendResetPasswordOTP } = require("../utils/email");
 const { sendAdminVerificationEmail } = require("../utils/email");
-const multer = require("multer");
-const path = require("path");
-
-// Cấu hình nơi lưu trữ file upload
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/avatars/"); // Thư mục lưu trữ ảnh avatar
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    );
-  },
-});
-
-// Bộ lọc kiểm tra file ảnh hợp lệ
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Chỉ cho phép tải lên file ảnh!"), false);
-  }
-};
-
-// Khởi tạo Multer
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn 5MB
-});
 //Đăng ký tài khoản
 router.post(
   "/register",
@@ -110,10 +79,12 @@ router.post(
         await sendOTP(email, otp);
       }
 
-      res.status(200).json({
-        msg: "Tài khoản đã được tạo. Kiểm tra email để xác thực.",
-        email,
-      });
+      res
+        .status(200)
+        .json({
+          msg: "Tài khoản đã được tạo. Kiểm tra email để xác thực.",
+          email,
+        });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
@@ -206,6 +177,7 @@ router.post(
   }
 );
 
+
 const authMiddleware = (req, res, next) => {
   const token = req.header("x-auth-token");
   if (!token) {
@@ -252,46 +224,6 @@ router.get("/me", authMiddleware, async (req, res) => {
     res.status(500).send("Lỗi máy chủ");
   }
 });
-
-router.put(
-  "/update-profile",
-  authMiddleware,
-  upload.single("avatar"), // Xử lý upload file ảnh
-  async (req, res) => {
-    const { username, phone_number, gender, address } = req.body;
-    const avatar = req.file ? `/uploads/avatars/${req.file.filename}` : null;
-
-    try {
-      let user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(404).json({ msg: "Người dùng không tồn tại" });
-      }
-
-      if (username) user.username = username;
-      if (phone_number) user.phone_number = phone_number;
-      if (gender) user.gender = gender;
-      if (address) user.address = address;
-      if (avatar) user.avatar = avatar;
-
-      await user.save();
-
-      res.status(200).json({
-        msg: "Cập nhật thông tin thành công!",
-        user: {
-          username: user.username,
-          email: user.email,
-          phone_number: user.phone_number,
-          gender: user.gender,
-          address: user.address,
-          avatar: user.avatar,
-        },
-      });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send("Lỗi máy chủ");
-    }
-  }
-);
 
 router.post(
   "/forgot-password",
@@ -415,6 +347,7 @@ router.post(
   }
 );
 
+
 router.get("/auto-verify", async (req, res) => {
   const { token } = req.query;
 
@@ -441,5 +374,6 @@ router.get("/auto-verify", async (req, res) => {
     return res.status(400).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
   }
 });
+
 
 module.exports = router;
